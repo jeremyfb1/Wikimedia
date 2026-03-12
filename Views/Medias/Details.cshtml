@@ -1,0 +1,20 @@
+﻿@model Models.Media
+@{
+    ViewBag.PageTitle = "Details";
+}
+
+<div id="MediaDetailsPanel">
+</div>
+
+@section Scripts {
+    <script>
+        $(() => {
+            let mediaDetailsAutoRefreshPanel =
+                new AutoRefreshedPanel(
+                    "MediaDetailsPanel",
+                    "/Medias/GetDetails",
+                    5 
+                );
+        })
+    </script>
+}
