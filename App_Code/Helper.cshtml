@@ -1,54 +1,11 @@
-﻿@helper When(DateTime date, bool showtime = false)
+﻿@helper AvatarUser(Models.User user, string avatarClass = "UserMediumAvatar")
 {
-    TimeSpan span = DateTime.Now.Subtract(date);
-    DateTime localTime = date; //date.Subtract(new TimeSpan((int)Session["TimeZoneOffset"], 0, 0));
-    string lds = localTime.ToLongDateString();
-    lds = char.ToUpper(lds[0]) + lds.Substring(1).ToLower();
-    if (span.Days > 0)
-    {
-        if (showtime)
-        {
-            <span>@lds - @localTime.ToShortTimeString()</span>
-        }
-        else
-        {
-
-            <div title="@localTime.ToShortTimeString()">@lds&nbsp;</div>
-
-        }
-    }
-    else
-    {
-        if (span.Hours >= 1)
-        {
-            <span>Il y a @span.Hours heures</span>
-        }
-        else
-        {
-            if (span.Minutes >= 1)
-            {
-                <span>Il y a @span.Minutes minutes</span>
-            }
-            else
-            {
-                <span>à l'instant</span>
-            }
-        }
-    }
-}
-
-@helper YoutubePlayer(string youtubeId, string yt_class = "mediaPalyerBig")
-{
-    <iframe class="mediaPlayerBig"
-            src="https://www.youtube.com/embed/@youtubeId"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-    </iframe>
-}
-
-
-@helper ImageLink(string controller, string action, string imageUrl, string imageClass, string title)
+    var avatarUrl = user.Avatar;
+    <div class="userItem">
+        <div class="@avatarClass" style="background: url(@user.Avatar)"></div>
+        <div class="ellipsis">@user.Name</div>
+    </div>
+}@helper ImageLink(string controller, string action, string imageUrl, string imageClass, string title)
 {
     var Url = new System.Web.Mvc.UrlHelper(HttpContext.Current.Request.RequestContext);
     <a href="@Url.Action(action, controller)">
@@ -204,14 +161,6 @@
              style="background: url(@avatar)"></div>
     </a>
 }
-@helper AvatarUser(Models.User user, string avatarClass = "UserMediumAvatar")
-{
-    var avatarUrl = user.Avatar;
-    <div class="userItem">
-        <div class="@avatarClass" style="background: url(@user.Avatar)"></div>
-        <div class="ellipsis">@user.Name</div>
-    </div>
-}
 @helper UsersCheckList(IEnumerable<Models.User> users, List<int> selectedUsers, string usersCheckListName = "UsersCheckList")
 {
     var Url = new System.Web.Mvc.UrlHelper(HttpContext.Current.Request.RequestContext);
@@ -320,11 +269,14 @@
                         {
                             youtubeId = youtubeId.Substring(0, youtubeId.IndexOf("&"));
                         }
-                        string youtubeThumbnail = "https://i3.ytimg.com/vi/" + youtubeId + "/maxresdefault.jpg";
                         <br />
-                        <a href="@token" target="_blank">
-                            <img class="contentImage" src="@youtubeThumbnail" alt="" />
-                        </a>
+                        <iframe class="mediaPlayerBig"
+                                src="https://www.youtube.com/embed/@youtubeId"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                        </iframe>
+
                         <br />
                     }
                     else
@@ -362,4 +314,51 @@
         }
     }
 }
+@helper When(DateTime date, bool showtime = false)
+{
+    TimeSpan span = DateTime.Now.Subtract(date);
+    DateTime localTime = date; //date.Subtract(new TimeSpan((int)Session["TimeZoneOffset"], 0, 0));
+    string lds = localTime.ToLongDateString();
+    lds = char.ToUpper(lds[0]) + lds.Substring(1).ToLower();
+    if (span.Days > 0)
+    {
+        if (showtime)
+        {
+            <span>@lds - @localTime.ToShortTimeString()</span>
+        }
+        else
+        {
 
+            <div title="@localTime.ToShortTimeString()">@lds&nbsp;</div>
+
+        }
+    }
+    else
+    {
+        if (span.Hours >= 1)
+        {
+            <span>Il y a @span.Hours heures</span>
+        }
+        else
+        {
+            if (span.Minutes >= 1)
+            {
+                <span>Il y a @span.Minutes minutes</span>
+            }
+            else
+            {
+                <span>à l'instant</span>
+            }
+        }
+    }
+}
+
+@helper YoutubePlayer(string youtubeId, string yt_class = "mediaPalyerBig")
+{
+    <iframe class="mediaPlayerBig"
+            src="https://www.youtube.com/embed/@youtubeId"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+    </iframe>
+}
