@@ -4,10 +4,22 @@
 {
     foreach (var media in Model)
     {
+        if (media.Shared || media.OwnerId == Models.User.ConnectedUser.Id || Models.User.ConnectedUser.IsAdmin)
+        {
         <div class="mediaLayout">
             <a href="/Medias/Details/@media.Id" title="Voir les détails de @media.Title" style="text-decoration:none; width:100% !important">
-                <div class="mediaThumbnail" 
-                     style="background-image:url('https://img.youtube.com/vi/@media.YoutubeId/mqdefault.jpg');">
+                <div class="mediaThumbnail"
+                     style="background-image:url('https://img.youtube.com/vi/@media.YoutubeId/mqdefault.jpg'); padding:6px; display:flex; flex-flow:row-reverse">
+
+
+                    @Helper.AvatarUser(media.Owner)
+                    @if (media.Shared && Models.User.ConnectedUser.IsAdmin || media.OwnerId == Models.User.ConnectedUser.Id && media.Shared )
+                    {
+                        <div class="UserSmallAvatar transparentBackground"
+                             style="background-image: url('/Content/UI-Images/shared.png');
+                             margin-right:6px" title="Partagé">
+                        </div>
+                    }
                 </div>
             </a>
 
@@ -16,6 +28,7 @@
             </div>
             <div style="margin-left: 4px; color: gray; font-size: 0.65em">@media.Category <br /> @Helper.When(media.PublishDate) </div>
         </div>
+        }
     }
 }
 else

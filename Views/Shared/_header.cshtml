@@ -14,6 +14,10 @@
     var Categories = (List<string>)Session["Categories"];
     bool SearchAscending = Session["SortAscending"] != null ? (bool)Session["SortAscending"] : true;
 
+
+    Media currentMedia = DAL.DB.Medias.Get(currentMediaId);
+
+
     // --- VARIABLES DE AUTH (Pour les permissions) ---
     bool userConnected = Models.User.ConnectedUser != null;
     bool userIsAdmin = userConnected ? Models.User.ConnectedUser.IsAdmin : false;
@@ -116,7 +120,7 @@
             // --- ACTION DÉTAILS D'UN MÉDIA ---
             case "details":
                 <div id="mainMenuPanel" class="menu">
-                    @if (userCanWrite)
+                    @if (userCanWrite && Models.User.ConnectedUser.Id == currentMedia.OwnerId || Models.User.ConnectedUser.IsAdmin)
                     {
                         <a href="/Medias/Edit" class="cmdIcon fa fa-pen-to-square" title="Modifier..."></a>
                         <i class="cmdIcon fa fa-trash-can"

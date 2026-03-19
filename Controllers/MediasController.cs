@@ -169,18 +169,31 @@ public class MediasController : Controller
         return RedirectToAction("List");
     }
 
-    public ActionResult GetDetails(bool forceRefresh = false)
+    /*public ActionResult GetDetails(bool forceRefresh = false)
     {
         try
         {
-            if (DB.Medias.HasChanged || forceRefresh)
+            if (DB.Medias.HasChanged || forceRefresh )
             {
                 int id = Session["CurrentMediaId"] != null ? (int)Session["CurrentMediaId"] : 0;
                 if (id != 0)
                 {
+                    bool
+                    isOwnerOrAdmin = (media.OwnerId == Models.User.ConnectedUser.Id)  Models.User.ConnectedUser.IsAdmin;
+
                     Media Media = DB.Medias.Get(id);
-                    if (Media != null)
-                        return PartialView(Media);
+
+                    if (Media != null )
+                        if (Media.OwnerId != Models.User.ConnectedUser.Id && !Media.Shared && !Models.User.ConnectedUser.IsAdmin)
+                            Media = null;
+
+                    if (Media == null (!Media.Shared && !isOwnerOrAdmin))
+                    {
+                        ResetCurrentMediaInfo();
+                        return PartialView((Models.Media)null);
+                    }
+
+                    return PartialView(Media);
                 }
             }
             return null;
@@ -188,6 +201,39 @@ public class MediasController : Controller
         catch (System.Exception ex)
         {
             return Content("Erreur interne" + ex.Message, "text/html");
+        }
+    }*/
+
+    public ActionResult GetDetails(bool forceRefresh = false)
+    {
+        try
+        {
+            InitSessionVariables();
+
+            int mediaId = (int)Session["CurrentMediaId"];
+            Media media = DB.Medias.Get(mediaId);
+
+
+            if (DB.Users.HasChanged || DB.Medias.HasChanged || forceRefresh)
+        {
+                bool isOwnerOrAdmin = false;
+                if (Models.User.ConnectedUser != null && media != null)
+                {
+                    isOwnerOrAdmin = (media.OwnerId == Models.User.ConnectedUser.Id) || Models.User.ConnectedUser.IsAdmin;
+                }
+
+                if (media == null || (!media.Shared && !isOwnerOrAdmin))
+                {
+                    ResetCurrentMediaInfo();
+                    return PartialView((Models.Media)null);
+                }
+                return PartialView(media);
+            }
+            return null;
+        }
+        catch (System.Exception ex)
+        {
+            return Content("Erreur interne : " + ex.Message, "text/html");
         }
     }
 
@@ -203,8 +249,10 @@ public class MediasController : Controller
      * that has not been produced by this application*/
     [ValidateAntiForgeryToken()]
     [UserAccess(Models.Access.Write)]
-    public ActionResult Create(Media Media)
+    public ActionResult Create(Media Media, string SharedCB = "off")
     {
+        Media.OwnerId = Models.User.ConnectedUser.Id;
+        Media.Shared = SharedCB == "on" ;
         DB.Medias.Add(Media);
         return RedirectToAction("List");
     }
@@ -220,6 +268,11 @@ public class MediasController : Controller
         int id = Session["CurrentMediaId"] != null ? (int)Session["CurrentMediaId"] : 0;
         if (id != 0)
         {
+            if (DB.Medias.Get(id)?.OwnerId != Models.User.ConnectedUser.Id && !Models.User.ConnectedUser.IsAdmin)
+            {
+                return Redirect("/Accounts/Login?message=Vous n'avez pas le droit d'effectuer cette action.&success=false");
+            }
+
             Media Media = DB.Medias.Get(id);
             if (Media != null)
                 return View(Media);
@@ -230,19 +283,28 @@ public class MediasController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken()]
     [UserAccess(Models.Access.Write)]
-    public ActionResult Edit(Media Media)
+    public ActionResult Edit(Media Media, string SharedCB = "off")
     {
         // Has explained earlier, id of Media is stored server side an not provided in form data
         // passed in the method in order to prever from malicious requests
+
+        Media.Shared = SharedCB == "on";
 
         int id = Session["CurrentMediaId"] != null ? (int)Session["CurrentMediaId"] : 0;
 
         // Make sure that the Media of id really exist
         Media storedMedia = DB.Medias.Get(id);
+
+        if (storedMedia == null || storedMedia.OwnerId != Models.User.ConnectedUser.Id && !Models.User.ConnectedUser.IsAdmin)
+        {
+            return Redirect("/Accounts/Login?message=Vous n'avez pas le droit d'effectuer cette action.&success=false");
+        }
+
         if (storedMedia != null)
         {
             Media.Id = id; // patch the Id
             Media.PublishDate = storedMedia.PublishDate; // keep orignal PublishDate
+            Media.OwnerId = storedMedia.OwnerId;
             DB.Medias.Update(Media);
         }
         return RedirectToAction("Details/" + id);
@@ -252,10 +314,12 @@ public class MediasController : Controller
     public ActionResult Delete()
     {
         int id = Session["CurrentMediaId"] != null ? (int)Session["CurrentMediaId"] : 0;
-        if (id != 0)
+        if (id == 0 || DB.Medias.Get(id)?.OwnerId != Models.User.ConnectedUser.Id && !Models.User.ConnectedUser.IsAdmin)
         {
-            DB.Medias.Delete(id);
+            return Redirect("/Accounts/Login?message=Vous n'avez pas le droit d'effectuer cette action.&success=false");
         }
+        DB.Medias.Delete(id);
+        
         return RedirectToAction("List");
     }
 

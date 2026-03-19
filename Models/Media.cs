@@ -1,4 +1,5 @@
 ﻿using DAL;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,13 @@ namespace Models
         public string Description { get; set; }
         public string YoutubeId { get; set; }
         public DateTime PublishDate { get; set; } = DateTime.Now;
+        public int OwnerId { get; set; } 
+        public bool Shared { get; set; } = false;
+
+        [JsonIgnore]
+        public User Owner => DB.Users.Get(OwnerId);
+
+
+
     }
 }
